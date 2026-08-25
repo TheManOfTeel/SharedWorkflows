@@ -80,7 +80,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8
         with:
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ inputs.token }}
           commit-message: '[BOT] Update packages to latest versions'
           committer: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
           base: ${{ inputs.base-branch }}
