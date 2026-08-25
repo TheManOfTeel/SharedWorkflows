@@ -2,6 +2,13 @@ name: Auto-approve Owner's Pull Requests
 
 on:
   workflow_call:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 jobs:
   auto-approve:
