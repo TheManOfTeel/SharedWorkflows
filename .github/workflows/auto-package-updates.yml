@@ -64,22 +64,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
-
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ inputs.node-version }}
           cache: npm
-
+          cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
       - name: Install npm-check-updates
         run: npm install -g npm-check-updates
-
       - name: Update packages
         working-directory: ${{ inputs.working-directory }}
         run: |
           ${{ inputs.update-command }}
           ${{ inputs.install-command }}
-
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8
         with:
