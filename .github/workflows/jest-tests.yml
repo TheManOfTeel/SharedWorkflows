@@ -1,0 +1,55 @@
+name: Jest Tests
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: Node.js version to use
+        required: false
+        type: string
+        default: '24'
+      working-directory:
+        description: Directory containing the project
+        required: false
+        type: string
+        default: '.'
+      install-command:
+        description: Dependency install command
+        required: false
+        type: string
+        default: 'npm ci'
+      test-command:
+        description: Test command to run
+        required: false
+        type: string
+        default: 'npm test -- --runInBand'
+      coverage-path:
+        description: Optional coverage artifact path to upload
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  jest-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+      - name: Install dependencies
+        working-directory: ${{ inputs.working-directory }}
+        run: ${{ inputs.install-command }}
+      - name: Run Jest tests
+        working-directory: ${{ inputs.working-directory }}
+        run: ${{ inputs.test-command }}
+      - name: Upload coverage artifact
+        if: ${{ inputs.coverage-path != '' }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: jest-coverage
+          path: ${{ inputs.coverage-path }}
+          if-no-files-found: ignore

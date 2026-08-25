@@ -1,0 +1,63 @@
+name: Cypress E2E Tests
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: Node.js version to use
+        required: false
+        type: string
+        default: '24'
+      working-directory:
+        description: Directory containing the app project
+        required: false
+        type: string
+        default: '.'
+      install-command:
+        description: Install command to run
+        required: false
+        type: string
+        default: 'npm ci'
+      start-command:
+        description: Command used to start the app before Cypress runs
+        required: false
+        type: string
+        default: 'npm start'
+      browser:
+        description: Browser to run Cypress against
+        required: false
+        type: string
+        default: 'chrome'
+
+jobs:
+  cypress-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+      - name: Install dependencies
+        working-directory: ${{ inputs.working-directory }}
+        run: ${{ inputs.install-command }}
+      - name: Run Cypress E2E tests
+        uses: cypress-io/github-action@v7
+        with:
+          install: false
+          working-directory: ${{ inputs.working-directory }}
+          start: ${{ inputs.start-command }}
+          browser: ${{ inputs.browser }}
+          record: false
+      - name: Upload Cypress artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: cypress-artifacts
+          path: |
+            cypress/screenshots/
+            cypress/videos/
+          retention-days: 7
+          if-no-files-found: ignore

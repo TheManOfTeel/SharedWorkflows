@@ -1,0 +1,53 @@
+name: .NET CI
+
+on:
+  workflow_call:
+    inputs:
+      dotnet-version:
+        description: .NET SDK version to install
+        required: false
+        type: string
+        default: '9.0.x'
+      working-directory:
+        description: Directory containing the .NET project or solution
+        required: false
+        type: string
+        default: '.'
+      restore-command:
+        description: Restore command to run
+        required: false
+        type: string
+        default: 'dotnet restore'
+      build-command:
+        description: Build command to run
+        required: false
+        type: string
+        default: 'dotnet build --no-restore'
+      test-command:
+        description: Test command to run
+        required: false
+        type: string
+        default: 'dotnet test --no-build --verbosity normal'
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+      - name: Restore dependencies
+        working-directory: ${{ inputs.working-directory }}
+        run: ${{ inputs.restore-command }}
+      - name: Build project
+        working-directory: ${{ inputs.working-directory }}
+        run: ${{ inputs.build-command }}
+      - name: Run tests
+        working-directory: ${{ inputs.working-directory }}
+        run: ${{ inputs.test-command }}

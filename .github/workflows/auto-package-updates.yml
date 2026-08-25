@@ -1,0 +1,95 @@
+name: Automated Package Updates
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: Node.js version to use
+        required: false
+        type: string
+        default: '24'
+      working-directory:
+        description: Directory containing the project
+        required: false
+        type: string
+        default: '.'
+      base-branch:
+        description: Branch to target for the PR
+        required: false
+        type: string
+        default: 'main'
+      assignee:
+        description: GitHub username to assign to the PR
+        required: false
+        type: string
+        default: 'TheManOfTeel'
+      labels:
+        description: Labels to apply to the PR
+        required: false
+        type: string
+        default: 'dependencies'
+      branch-name:
+        description: Branch name for dependency update PRs
+        required: false
+        type: string
+        default: 'dependency-updates-automated'
+      pr-title:
+        description: PR title
+        required: false
+        type: string
+        default: '[BOT] Automated package updates'
+      pr-body:
+        description: PR body
+        required: false
+        type: string
+        default: 'Updated packages to their latest versions.'
+      update-command:
+        description: Command used to update dependencies
+        required: false
+        type: string
+        default: 'ncu -t minor -u'
+      install-command:
+        description: Install command after updating packages
+        required: false
+        type: string
+        default: 'npm install'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  package-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+
+      - name: Install npm-check-updates
+        run: npm install -g npm-check-updates
+
+      - name: Update packages
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          ${{ inputs.update-command }}
+          ${{ inputs.install-command }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          commit-message: '[BOT] Update packages to latest versions'
+          committer: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+          base: ${{ inputs.base-branch }}
+          title: ${{ inputs.pr-title }}
+          body: ${{ inputs.pr-body }}
+          labels: ${{ inputs.labels }}
+          assignees: ${{ inputs.assignee }}
+          branch: ${{ inputs.branch-name }}
+          delete-branch: true

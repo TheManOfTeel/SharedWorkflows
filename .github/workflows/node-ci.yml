@@ -1,0 +1,59 @@
+name: Node.js CI
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: Node.js version to install
+        required: false
+        type: string
+        default: '24'
+      package-manager:
+        description: Package manager to use for install and script execution
+        required: false
+        type: string
+        default: 'npm'
+      working-directory:
+        description: Directory containing the package.json file
+        required: false
+        type: string
+        default: '.'
+      install-command:
+        description: Install command to run
+        required: false
+        type: string
+        default: 'npm ci'
+      build-command:
+        description: Build command to run
+        required: false
+        type: string
+        default: 'npm run build --if-present'
+      test-command:
+        description: Test command to run
+        required: false
+        type: string
+        default: 'npm test'
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: ${{ inputs.package-manager }}
+      - name: Install dependencies
+        working-directory: ${{ inputs.working-directory }}
+        run: ${{ inputs.install-command }}
+      - name: Build project
+        working-directory: ${{ inputs.working-directory }}
+        run: ${{ inputs.build-command }}
+      - name: Run tests
+        working-directory: ${{ inputs.working-directory }}
+        run: ${{ inputs.test-command }}
