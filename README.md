@@ -16,39 +16,77 @@ This repository centralizes workflow logic that can be reused across multiple re
 
 ### 1. Auto-approve owner PRs
 
-The workflow in [.github/workflows/auto-approve-owner-pr.yml](.github/workflows/auto-approve-owner-pr.yml) approves pull requests created by the repository owner.
+The workflow in [.github/workflows/auto-approve-owner-pr.yml](.github/workflows/auto-approve-owner-pr.yml) approves pull requests created by the repository owner. The calling workflow must grant `pull-requests: write` permission.
 
 ### 2. Node.js CI
 
-The workflow in [.github/workflows/node-ci.yml](.github/workflows/node-ci.yml) provides a reusable Node.js build and test pipeline with inputs for:
+The workflow in [.github/workflows/node-ci.yml](.github/workflows/node-ci.yml) provides a reusable Node.js build and test pipeline. All inputs are optional:
 
-- node version
-- working directory
-- install command
-- build command
-- test command
+| Input | Default | Description |
+| --- | --- | --- |
+| `node-version` | `24` | Node.js version |
+| `package-manager` | `npm` | Package manager setting retained for compatibility |
+| `cache` | `npm` | `actions/setup-node` cache; set to an empty string to disable |
+| `working-directory` | `.` | Directory containing `package.json` |
+| `install-command` | `npm ci` | Dependency install command |
+| `build-command` | `npm run build --if-present` | Build command |
+| `test-command` | `npm test` | Test command |
 
 ### 3. .NET CI
 
-The workflow in [.github/workflows/dotnet-ci.yml](.github/workflows/dotnet-ci.yml) provides a reusable .NET restore/build/test pipeline with inputs for:
+The workflow in [.github/workflows/dotnet-ci.yml](.github/workflows/dotnet-ci.yml) provides a reusable .NET restore/build/test pipeline. All inputs are optional:
 
-- .NET SDK version
-- working directory
-- restore command
-- build command
-- test command
+| Input | Default | Description |
+| --- | --- | --- |
+| `dotnet-version` | `9.0.x` | .NET SDK version |
+| `working-directory` | `.` | Directory containing the project or solution |
+| `restore-command` | `dotnet restore` | Restore command |
+| `build-command` | `dotnet build --no-restore` | Build command |
+| `test-command` | `dotnet test --no-build --verbosity normal` | Test command |
 
 ### 4. Jest tests
 
-The workflow in [.github/workflows/jest-tests.yml](.github/workflows/jest-tests.yml) runs a Node.js test suite and optionally uploads coverage artifacts.
+The workflow in [.github/workflows/jest-tests.yml](.github/workflows/jest-tests.yml) runs a Node.js test suite and optionally uploads coverage artifacts or appends a generated summary to the GitHub Actions job summary. All inputs are optional:
+
+| Input | Default | Description |
+| --- | --- | --- |
+| `node-version` | `24` | Node.js version |
+| `working-directory` | `.` | Directory containing the project |
+| `install-command` | `npm ci` | Dependency install command |
+| `test-command` | `npm test -- --runInBand` | Test command |
+| `coverage-path` | Empty | Coverage path to upload; empty disables the artifact |
+| `summary-command` | Empty | Command whose output is appended to the job summary |
 
 ### 5. Cypress E2E tests
 
-The workflow in [.github/workflows/cypress-e2e-tests.yml](.github/workflows/cypress-e2e-tests.yml) runs Cypress browser tests and uploads failure artifacts.
+The workflow in [.github/workflows/cypress-e2e-tests.yml](.github/workflows/cypress-e2e-tests.yml) runs Cypress browser tests and uploads screenshots and videos on failure. All inputs are optional:
+
+| Input | Default | Description |
+| --- | --- | --- |
+| `node-version` | `24` | Node.js version |
+| `working-directory` | `.` | Directory containing the app project |
+| `install-command` | `npm ci` | Dependency install command |
+| `start-command` | `npm start` | Command used to start the app |
+| `browser` | `chrome` | Cypress browser |
 
 ### 6. Automated package updates
 
-The workflow in [.github/workflows/auto-package-updates.yml](.github/workflows/auto-package-updates.yml) updates dependencies and opens a dependency PR.
+The workflow in [.github/workflows/auto-package-updates.yml](.github/workflows/auto-package-updates.yml) updates dependencies and opens a dependency PR. All inputs are optional:
+
+| Input | Default | Description |
+| --- | --- | --- |
+| `node-version` | `24` | Node.js version |
+| `working-directory` | `.` | Directory containing the project |
+| `base-branch` | `main` | Branch targeted by the PR |
+| `assignee` | `TheManOfTeel` | GitHub username assigned to the PR |
+| `labels` | `dependencies` | Labels applied to the PR |
+| `branch-name` | `dependency-updates-automated` | Update PR branch name |
+| `pr-title` | `[BOT] Automated package updates` | PR title |
+| `pr-body` | `Updated packages to their latest versions.` | PR body |
+| `update-command` | `ncu -t minor -u` | Dependency update command |
+| `install-command` | `npm install` | Install command after updating |
+
+This workflow requires a `GH_TOKEN` secret with permission to write repository contents and pull requests. The caller can make it available with `secrets: inherit`.
 
 ## Example usage
 
@@ -63,6 +101,8 @@ on:
 
 jobs:
   auto-approve:
+    permissions:
+      pull-requests: write
     uses: <your-org>/SharedWorkflows/.github/workflows/auto-approve-owner-pr.yml@v1.0.0
 ```
 
@@ -146,6 +186,7 @@ on:
 jobs:
   deps:
     uses: <your-org>/SharedWorkflows/.github/workflows/auto-package-updates.yml@v1.0.0
+    secrets: inherit
     with:
       working-directory: .
       base-branch: main
