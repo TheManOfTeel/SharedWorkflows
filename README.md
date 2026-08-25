@@ -120,6 +120,7 @@ jobs:
     uses: <your-org>/SharedWorkflows/.github/workflows/node-ci.yml@v1.0.0
     with:
       working-directory: ./Source/ClientApp
+      node-version: 24.x
       cache: npm
       install-command: npm ci
       build-command: npm run build --if-present
