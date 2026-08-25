@@ -28,6 +28,11 @@ on:
         required: false
         type: string
         default: ''
+      summary-command:
+        description: Optional command to append a test summary to the GitHub Actions summary
+        required: false
+        type: string
+        default: ''
 
 jobs:
   jest-test:
@@ -46,6 +51,10 @@ jobs:
       - name: Run Jest tests
         working-directory: ${{ inputs.working-directory }}
         run: ${{ inputs.test-command }}
+      - name: Generate test summary
+        if: ${{ always() && inputs.summary-command != '' }}
+        working-directory: ${{ inputs.working-directory }}
+        run: ${{ inputs.summary-command }} >> "$GITHUB_STEP_SUMMARY"
       - name: Upload coverage artifact
         if: ${{ inputs.coverage-path != '' }}
         uses: actions/upload-artifact@v6

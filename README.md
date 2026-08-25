@@ -80,6 +80,7 @@ jobs:
     uses: <your-org>/SharedWorkflows/.github/workflows/node-ci.yml@v1.0.0
     with:
       working-directory: ./Source/ClientApp
+      cache: npm
       install-command: npm ci
       build-command: npm run build --if-present
       test-command: npm test
@@ -116,6 +117,7 @@ jobs:
       install-command: npm ci
       test-command: npm run test:ci
       coverage-path: coverage/
+      summary-command: node .github/scripts/jest-summary.js
 ```
 
 ### Cypress E2E tests

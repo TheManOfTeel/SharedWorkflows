@@ -13,6 +13,11 @@ on:
         required: false
         type: string
         default: 'npm'
+      cache:
+        description: Package manager cache to use, or empty to disable caching
+        required: false
+        type: string
+        default: 'npm'
       working-directory:
         description: Directory containing the package.json file
         required: false
@@ -47,7 +52,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ inputs.node-version }}
-          cache: ${{ inputs.package-manager }}
+          cache: ${{ inputs.cache }}
       - name: Install dependencies
         working-directory: ${{ inputs.working-directory }}
         run: ${{ inputs.install-command }}
