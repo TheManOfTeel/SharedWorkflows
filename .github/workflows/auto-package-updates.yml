@@ -80,8 +80,8 @@ jobs:
         timeout-minutes: 15
         working-directory: ${{ inputs.working-directory }}
         run: |
-          ${{ inputs.update-command }}
-          ${{ inputs.install-command }}
+          ncu -t minor -u --filter "@angular/*" --filter "rxjs" --filter "tslib" --filter "zone.js"
+          npm install --ignore-scripts --no-audit --no-fund
       - name: Create Pull Request
         timeout-minutes: 10
         uses: peter-evans/create-pull-request@v8
