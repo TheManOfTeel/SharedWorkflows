@@ -65,23 +65,28 @@ jobs:
     concurrency:
       group: automated-package-updates-${{ github.repository }}
       cancel-in-progress: true
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ inputs.node-version }}
           cache: npm
           cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+
       - name: Install npm-check-updates
         run: npm install -g npm-check-updates
+
       - name: Update packages
         timeout-minutes: 15
         working-directory: ${{ inputs.working-directory }}
         run: |
-          ${{ inputs.update-command }}
-          ${{ inputs.install-command }}
+          ncu -t minor -u --filter "@angular/*" --filter "rxjs" --filter "tslib" --filter "zone.js"
+          npm install --ignore-scripts --no-audit --no-fund
+
       - name: Create Pull Request
         timeout-minutes: 10
         uses: peter-evans/create-pull-request@v8
